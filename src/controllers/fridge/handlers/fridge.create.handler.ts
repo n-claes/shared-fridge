@@ -1,5 +1,5 @@
 import { RequestContext } from "@mikro-orm/core";
-import { FridgeBody } from "../../../contracts/fridge.body.js";
+import { FridgeBody } from "../../../contracts/fridge/fridge.body.js";
 import { Fridge } from "../../../entities/fridge.entity.js";
 
 

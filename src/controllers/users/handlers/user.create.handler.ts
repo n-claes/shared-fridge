@@ -1,4 +1,4 @@
-import { UserBody } from "../../../contracts/user.body.js";
+import { UserBody } from "../../../contracts/users/user.body.js";
 import { RequestContext } from "@mikro-orm/core";
 import { User } from "../../../entities/user.entity.js";
 

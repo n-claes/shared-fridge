@@ -1,7 +1,7 @@
 import { Exclude, Expose } from "class-transformer";
 import { IsNumber } from "class-validator";
-import { User } from "../entities/user.entity.js";
-import { Product } from "../entities/product.entity.js";
+import { User } from "../../entities/user.entity.js";
+import { Product } from "../../entities/product.entity.js";
 
 @Exclude()
 export class FridgeView {

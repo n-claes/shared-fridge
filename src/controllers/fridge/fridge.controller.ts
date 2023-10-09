@@ -1,7 +1,7 @@
 import { Body, ListRepresenter, Query, Representer, StatusCode } from "@panenco/papi";
 import { Get, JsonController, Param, Post } from "routing-controllers";
-import { FridgeView } from "../../contracts/fridge.view.js";
-import { FridgeBody } from "../../contracts/fridge.body.js";
+import { FridgeView } from "../../contracts/fridge/fridge.view.js";
+import { FridgeBody } from "../../contracts/fridge/fridge.body.js";
 import { createFridge } from "./handlers/fridge.create.handler.js";
 import { SearchQuery } from "../../contracts/search.query.js";
 import { getAllFridges } from "./handlers/fridge.getAllFridges.handler.js";

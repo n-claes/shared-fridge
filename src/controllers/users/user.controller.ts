@@ -1,15 +1,15 @@
 import { Body, ListRepresenter, Query, Representer, StatusCode } from "@panenco/papi";
-import { UserBody } from "../../contracts/user.body.js";
+import { UserBody } from "../../contracts/users/user.body.js";
 import { create } from "./handlers/user.create.handler.js";
 import { Delete, Get, JsonController, Param, Post } from "routing-controllers";
-import { UserView } from "../../contracts/user.view.js";
+import { UserView } from "../../contracts/users/user.view.js";
 import { SearchQuery } from "../../contracts/search.query.js";
 import { getAllUsers } from "./handlers/user.getAllUsers.handler.js";
 import { getUser } from "./handlers/user.getUser.handler.js";
 import { deleteByName } from "./handlers/user.delete.handler.js";
-import { ProductBody } from "../../contracts/product.body.js";
+import { ProductBody } from "../../contracts/products/product.body.js";
 import { addProduct } from "./handlers/user.addProduct.handler.js";
-import { ProductView } from "../../contracts/product.view.js";
+import { ProductView } from "../../contracts/products/product.view.js";
 import { OpenAPI } from "routing-controllers-openapi";
 
 @JsonController("/users")
