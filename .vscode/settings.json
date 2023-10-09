@@ -7,10 +7,13 @@
     "./src/tests/*.test.ts",
     "./src/tests/**/*.test.ts",
   ],
-  "mochaExplorer.watch": "./src/tests/**/*.test.ts",
+  "mochaExplorer.watch": [
+    "./src/tests/*.test.ts",
+    "./src/tests/**/*.test.ts",
+  ],
   "mochaExplorer.nodeArgv": [
     "--loader",
-    "tsx"
+    "ts-node/esm"
   ],
   "mochaExplorer.env": {
     "NODE_ENV": "test",
