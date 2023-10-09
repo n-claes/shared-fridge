@@ -1,14 +1,31 @@
-import { Body, Representer, StatusCode } from "@panenco/papi";
-import { JsonController, Post } from "routing-controllers";
+import { Body, ListRepresenter, Query, Representer, StatusCode } from "@panenco/papi";
+import { Get, JsonController, Param, Post } from "routing-controllers";
 import { FridgeView } from "../../contracts/fridge.view.js";
 import { FridgeBody } from "../../contracts/fridge.body.js";
 import { createFridge } from "./handlers/fridge.create.handler.js";
+import { SearchQuery } from "../../contracts/search.query.js";
+import { getAllFridges } from "./handlers/fridge.getAllFridges.handler.js";
+import { getFridge } from "./handlers/fridge.getFridge.handler.js";
+import { OpenAPI } from "routing-controllers-openapi";
 
 @JsonController("/fridge")
 export class FridgeController {
   @Post()
   @Representer(FridgeView, StatusCode.created)
+  @OpenAPI({summary: "Create fridge"})
   async create(@Body() body: FridgeBody) {
     return createFridge(body);
+  }
+
+  @Get()
+  @ListRepresenter(FridgeView)
+  async getAllFridges(@Query() query: SearchQuery) {
+    return getAllFridges(query.search);
+  }
+
+  @Get("/:location")
+  @Representer(FridgeView)
+  async getFridge(@Param("location") location: number) {
+    return getFridge(location);
   }
 }

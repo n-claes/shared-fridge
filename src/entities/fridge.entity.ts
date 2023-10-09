@@ -1,6 +1,5 @@
 import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
-import { User } from "./user.entity.js";
-import { IsOptional } from "class-validator";
+import { Product } from "./product.entity.js";
 
 @Entity()
 export class Fridge {
@@ -13,6 +12,6 @@ export class Fridge {
   @Property()
   public currentCapacity: number;
 
-  @Property()
-  public users: User[];
+  @Property({ type: "jsonb", default: "[]" })
+  public products: Product[] = [];
 }

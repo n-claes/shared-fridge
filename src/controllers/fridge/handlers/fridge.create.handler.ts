@@ -8,9 +8,6 @@ export const createFridge = async (body: FridgeBody) => {
   if (!body.currentCapacity) {
     body.currentCapacity = 0;
   }
-  if (!body.users) {
-    body.users = [];
-  }
   const newFridge = em.create(Fridge, body);
   await em.persistAndFlush(newFridge);
   return newFridge;

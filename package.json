@@ -34,7 +34,7 @@
     "mocha": "^10.0.0",
     "routing-controllers": "^0.10.4",
     "routing-controllers-openapi": "^4.0.0",
-    "swagger-ui-express": "^4.4.0",
+    "swagger-ui-express": "^4.6.3",
     "typings": "link:@mikro-orm/core/typings",
     "uuid": "^8.3.2"
   },

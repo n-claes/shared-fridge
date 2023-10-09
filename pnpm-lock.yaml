@@ -61,7 +61,7 @@ dependencies:
     specifier: ^4.0.0
     version: 4.0.0(routing-controllers@0.10.4)
   swagger-ui-express:
-    specifier: ^4.4.0
+    specifier: ^4.6.3
     version: 4.6.3(express@4.18.2)
   typings:
     specifier: link:@mikro-orm/core/typings

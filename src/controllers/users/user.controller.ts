@@ -4,17 +4,32 @@ import { create } from "./handlers/user.create.handler.js";
 import { Delete, Get, JsonController, Param, Post } from "routing-controllers";
 import { UserView } from "../../contracts/user.view.js";
 import { SearchQuery } from "../../contracts/search.query.js";
-import { getAllUsers } from "./handlers/user.getAllUsers.js";
-import { getUser } from "./handlers/user.getUser.js";
+import { getAllUsers } from "./handlers/user.getAllUsers.handler.js";
+import { getUser } from "./handlers/user.getUser.handler.js";
 import { deleteByName } from "./handlers/user.delete.handler.js";
+import { ProductBody } from "../../contracts/product.body.js";
+import { addProduct } from "./handlers/user.addProduct.handler.js";
+import { ProductView } from "../../contracts/product.view.js";
+import { OpenAPI } from "routing-controllers-openapi";
 
 @JsonController("/users")
 export class UserController {
   @Post()
   @Representer(UserView, StatusCode.created)
+  @OpenAPI({summary: "Create user"})
   async create(@Body() body: UserBody) {
     return create(body);
   }
+
+  @Post("/:lastName/:fridgeLocation")
+  @Representer(ProductView, StatusCode.ok)
+  async addProduct(
+    @Param("lastName") lastName: string,
+    @Param("fridgeLocation") fridgeLocation: number,
+    @Body() body: ProductBody
+  ) {
+    return addProduct(lastName, body, fridgeLocation)
+  };
 
   @Get()
   @ListRepresenter(UserView)

@@ -1,6 +1,5 @@
 import { Exclude, Expose } from "class-transformer";
-import { IsArray, IsNumber, IsOptional } from "class-validator";
-import { User } from "../entities/user.entity.js";
+import { IsNumber, IsOptional } from "class-validator";
 
 @Exclude()
 export class FridgeBody {
@@ -16,9 +15,4 @@ export class FridgeBody {
   @IsNumber()
   @IsOptional()
   public currentCapacity: number;
-
-  @Expose()
-  @IsArray()
-  @IsOptional()
-  public users: User[];
 }
