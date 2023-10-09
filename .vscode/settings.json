@@ -1,0 +1,20 @@
+{
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "mochaExplorer.files": [
+    "./src/tests/*.test.ts",
+    "./src/tests/**/*.test.ts",
+  ],
+  "mochaExplorer.watch": "./src/tests/**/*.test.ts",
+  "mochaExplorer.nodeArgv": [
+    "--loader",
+    "tsx"
+  ],
+  "mochaExplorer.env": {
+    "NODE_ENV": "test",
+    "SWCRC": "true"
+  },
+  "testExplorer.mergeSuites": true,
+}

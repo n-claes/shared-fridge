@@ -1,0 +1,10 @@
+{
+  "port": 3000,
+  "postgres": {
+    "db": "sharedfridge",
+    "host": "localhost",
+    "password": "root",
+    "port": 5432,
+    "user": "root"
+  }
+}
