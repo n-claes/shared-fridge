@@ -15,6 +15,7 @@ import { getMetadataStorage } from "class-validator";
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import ormConfig from './mikro-orm.config.js';
+import { UserController } from './controllers/user.controller.js';
 
 export class App {
   public host: Application
@@ -28,6 +29,8 @@ export class App {
       RequestContext.create(this.orm.em, next);
     });
 
+    const controllers = [UserController]
+    this.initializeControllers(controllers)
     this.initializeSwagger();
 
     this.host.use(errorMiddleware);
