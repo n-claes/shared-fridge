@@ -8,6 +8,9 @@ export const createFridge = async (body: FridgeBody) => {
   if (!body.currentCapacity) {
     body.currentCapacity = 0;
   }
+  if (await em.findOne(Fridge, { location: body.location })) {
+    throw new Error("Fridge already exists at this location");
+  }
   const newFridge = em.create(Fridge, body);
   await em.persistAndFlush(newFridge);
   return newFridge;

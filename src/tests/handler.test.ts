@@ -1,11 +1,18 @@
 import { expect } from "chai";
-import { beforeEach, describe, it } from 'mocha';
+import { after, beforeEach, describe, it } from 'mocha';
 import { User } from "../entities/user.entity.js";
 import { MikroORM, RequestContext } from "@mikro-orm/core";
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 import mikroOrmConfig from "../mikro-orm.config.js";
 import { getAllUsers } from "../controllers/users/handlers/user.getAllUsers.handler.js";
 import { getUser } from "../controllers/users/handlers/user.getUser.handler.js";
+import { Fridge } from "../entities/fridge.entity.js";
+import { getAllFridges } from "../controllers/fridge/handlers/fridge.getAllFridges.handler.js";
+import { getFridge } from "../controllers/fridge/handlers/fridge.getFridge.handler.js";
+import { Product } from "../entities/product.entity.js";
+import { addProduct } from "../controllers/users/handlers/user.addProduct.handler.js";
+import { create } from "../controllers/users/handlers/user.create.handler.js";
+import { createFridge } from "../controllers/fridge/handlers/fridge.create.handler.js";
 
 const userFixtures: User[] = [
   {
@@ -28,20 +35,61 @@ const userFixtures: User[] = [
   } as User,
 ]
 
+const fridgeFixtures: Fridge[] = [
+  {
+    location: 0,
+    totalCapacity: 10,
+    currentCapacity: 5,
+  } as Fridge,
+  {
+    location: 1,
+    totalCapacity: 2,
+    currentCapacity: 0,
+  } as Fridge,
+  {
+    location: 3,
+    totalCapacity: 20,
+    currentCapacity: 0,
+  } as Fridge,
+]
+
+const productNames: string[] = [
+  "apple", "pear", "beer", "egg", "flour", "water",
+  "milk", "tomatoes", "carrots", "spices"
+]
+const productSizes: number[] = [2, 2, 4, 1, 2, 1, 1, 3, 5, 1]
+const productBelongsToIdx: number[] = [0, 0, 0, 1, 1, 1, 2, 2, 2, 2]
+const productFixtures: Product[] = [
+  ...Array.from({length: 10}, (_, i) => ({
+    "name": productNames[i],
+    "size": productSizes[i],
+    "belongsTo": userFixtures[productBelongsToIdx[i]].lastName,
+  })),
+]
+
+const createOrmFork = async (orm: MikroORM<PostgreSqlDriver>) => {
+  await orm.em.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
+  await orm.getMigrator().up();
+  const generator = orm.getSchemaGenerator();
+  await generator.updateSchema();
+  return orm.em.fork();
+}
+
 describe("Handler tests", () => {
+  let orm: MikroORM<PostgreSqlDriver>;
+  before(async () => {
+    orm = await MikroORM.init(mikroOrmConfig);
+  });
+
+  after(async () => {
+    await orm.close(true);
+  });
+
   describe("User tests", () => {
-    let orm: MikroORM<PostgreSqlDriver>;
     let users: User[];
-    before(async () => {
-      orm = await MikroORM.init(mikroOrmConfig);
-    });
 
     beforeEach(async () => {
-      await orm.em.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
-      await orm.getMigrator().up();
-      const generator = orm.getSchemaGenerator();
-      await generator.updateSchema();
-      const em = orm.em.fork();
+      const em = await createOrmFork(orm);
       users = userFixtures.map((x) => em.create(User, x));
       await em.persistAndFlush(users);
     });
@@ -76,6 +124,106 @@ describe("Handler tests", () => {
           await getUser("unknown");
         } catch (error) {
           expect(error.message).to.equal("User not found");
+          return
+        }
+        expect(true, "should have thrown an error").false;
+      });
+    });
+
+    it("should fail to create a user", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        try {
+          await create(users[0]);
+        } catch (error) {
+          expect(error.message).to.equal("User already exists");
+          return
+        }
+        expect(true, "should have thrown an error").false;
+      });
+    });
+  });
+
+
+  describe("Fridge tests", () => {
+    let fridges: Fridge[];
+
+    beforeEach(async () => {
+      const em = await createOrmFork(orm);
+      fridges = fridgeFixtures.map((x) => em.create(Fridge, x));
+      await em.persistAndFlush(fridges);
+    });
+
+    it("should get all fridges", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const [res, total] = await getAllFridges(null);
+        expect(res.length).to.equal(fridgeFixtures.length);
+        expect(res.some((x) => x.location === 3)).to.be.true;
+      });
+    })
+
+    it("should search a fridge", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const [res, total] = await getAllFridges(1);
+        expect(res.some((x) => x.location === 1)).to.be.true;
+      });
+    });
+
+    it("should get a fridge by its location", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const res = await getFridge(fridges[0].location);
+        expect(res.location).to.equal(0);
+        expect(res.totalCapacity).to.equal(fridgeFixtures[0].totalCapacity);
+      });
+    });
+
+    it("should fail to create a fridge", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        try {
+          await createFridge(fridges[0]);
+        } catch (error) {
+          expect(error.message).to.equal("Fridge already exists at this location");
+          return
+        }
+        expect(true, "should have thrown an error").false;
+      });
+    });
+  });
+
+
+  describe("Product tests", () => {
+    let users: User[];
+    let fridges: Fridge[];
+
+    beforeEach(async () => {
+      const em = await createOrmFork(orm);
+      users = userFixtures.map((x) => em.create(User, x));
+      fridges = fridgeFixtures.map((x) => em.create(Fridge, x));
+      await em.persistAndFlush(users);
+      await em.persistAndFlush(fridges);
+    })
+
+    it("should put a user's product in a fridge", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const prod = productFixtures[0]
+        await addProduct(prod.belongsTo, prod, 0)
+        const fridge = await getFridge(0)
+        console.log(fridge)
+        expect(fridge.products[0].name).to.equal(prod.name)
+        expect(fridge.products[0].size).to.equal(prod.size)
+        expect(fridge.products[0].belongsTo).to.equal(prod.belongsTo)
+        expect(fridge.currentCapacity).to.equal(
+          fridgeFixtures[0].currentCapacity + prod.size
+        )
+      });
+    });
+
+    it("should not accept products if they don't fit in the fridge", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const prod = productFixtures[8]
+        try {
+          await addProduct(prod.belongsTo, prod, 1)
+        } catch (error) {
+          expect(error.message).to.equal("Product does not fit in fridge")
         }
       });
     });

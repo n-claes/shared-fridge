@@ -3,7 +3,7 @@ import { Get, JsonController, Param, Post } from "routing-controllers";
 import { FridgeView } from "../../contracts/fridge/fridge.view.js";
 import { FridgeBody } from "../../contracts/fridge/fridge.body.js";
 import { createFridge } from "./handlers/fridge.create.handler.js";
-import { SearchQuery } from "../../contracts/search.query.js";
+import { SearchQuery, SearchQueryNumber } from "../../contracts/search.query.js";
 import { getAllFridges } from "./handlers/fridge.getAllFridges.handler.js";
 import { getFridge } from "./handlers/fridge.getFridge.handler.js";
 import { OpenAPI } from "routing-controllers-openapi";
@@ -19,7 +19,7 @@ export class FridgeController {
 
   @Get()
   @ListRepresenter(FridgeView)
-  async getAllFridges(@Query() query: SearchQuery) {
+  async getAllFridges(@Query() query: SearchQueryNumber) {
     return getAllFridges(query.search);
   }
 

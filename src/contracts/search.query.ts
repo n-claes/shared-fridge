@@ -10,3 +10,11 @@ export class SearchQuery {
   @IsOptional()
   public search?: string;
 }
+
+@Exclude()
+export class SearchQueryNumber {
+  @Expose()
+  @IsString()
+  @IsOptional()
+  public search?: number;
+}
