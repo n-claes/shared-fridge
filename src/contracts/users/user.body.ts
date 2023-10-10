@@ -1,5 +1,6 @@
 import { Exclude, Expose } from "class-transformer";
-import { IsEmail, IsString, Length } from "class-validator";
+import { IsArray, IsEmail, IsOptional, IsString, Length } from "class-validator";
+import { Product } from "../../entities/product.entity.js";
 
 @Exclude()
 export class UserBody {

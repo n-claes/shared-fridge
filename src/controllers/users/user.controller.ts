@@ -8,9 +8,11 @@ import { getAllUsers } from "./handlers/user.getAllUsers.handler.js";
 import { getUser } from "./handlers/user.getUser.handler.js";
 import { deleteByName } from "./handlers/user.delete.handler.js";
 import { ProductBody } from "../../contracts/products/product.body.js";
-import { addProduct } from "./handlers/user.addProduct.handler.js";
+import { moveProductToFridge } from "./handlers/user.moveProductToFridge.handler.js";
 import { ProductView } from "../../contracts/products/product.view.js";
 import { OpenAPI } from "routing-controllers-openapi";
+import { buyProduct } from "./handlers/user.buyProduct.handler.js";
+import { FridgeView } from "../../contracts/fridge/fridge.view.js";
 
 @JsonController("/users")
 export class UserController {
@@ -21,14 +23,20 @@ export class UserController {
     return create(body);
   }
 
-  @Post("/:lastName/:fridgeLocation")
+  @Post("/:lastName/buy")
   @Representer(ProductView, StatusCode.ok)
-  async addProduct(
+  async buyProduct(@Param("lastName") lastName: string, @Body() body: ProductBody) {
+    return buyProduct(body, lastName)
+  }
+
+  @Post("/:lastName/move/:productName/:fridgeLocation")
+  @Representer(FridgeView, StatusCode.ok)
+  async moveProductToFridge(
     @Param("lastName") lastName: string,
     @Param("fridgeLocation") fridgeLocation: number,
-    @Body() body: ProductBody
+    @Param("productName") productName: string,
   ) {
-    return addProduct(lastName, body, fridgeLocation)
+    return moveProductToFridge(lastName, productName, fridgeLocation)
   };
 
   @Get()

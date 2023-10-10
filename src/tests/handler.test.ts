@@ -10,9 +10,10 @@ import { Fridge } from "../entities/fridge.entity.js";
 import { getAllFridges } from "../controllers/fridge/handlers/fridge.getAllFridges.handler.js";
 import { getFridge } from "../controllers/fridge/handlers/fridge.getFridge.handler.js";
 import { Product } from "../entities/product.entity.js";
-import { addProduct } from "../controllers/users/handlers/user.addProduct.handler.js";
+import { moveProductToFridge } from "../controllers/users/handlers/user.moveProductToFridge.handler.js";
 import { create } from "../controllers/users/handlers/user.create.handler.js";
 import { createFridge } from "../controllers/fridge/handlers/fridge.create.handler.js";
+import { buyProduct } from "../controllers/users/handlers/user.buyProduct.handler.js";
 
 const userFixtures: User[] = [
   {
@@ -202,26 +203,44 @@ describe("Handler tests", () => {
       await em.persistAndFlush(fridges);
     })
 
+    it("should let a user buy a product", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const prod = productFixtures[0]
+        const user = await getUser(prod.belongsTo)
+        await buyProduct(prod, user.lastName)
+        expect(user.products.length).to.equal(1)
+        expect(user.products[0].name).to.equal(prod.name)
+      });
+    });
+
     it("should put a user's product in a fridge", async() => {
       await RequestContext.createAsync(orm.em.fork(), async() => {
         const prod = productFixtures[0]
-        await addProduct(prod.belongsTo, prod, 0)
         const fridge = await getFridge(0)
-        console.log(fridge)
+        const user = await getUser(prod.belongsTo)
+        await buyProduct(prod, prod.belongsTo)
+
+        expect(user.products.length).to.equal(1)
+        expect(fridge.products.length).to.equal(0)
+
+        await moveProductToFridge(user.lastName, prod.name, fridge.location)
+
+        expect(user.products.length).to.equal(0)
+        expect(fridge.products.length).to.equal(1)
         expect(fridge.products[0].name).to.equal(prod.name)
-        expect(fridge.products[0].size).to.equal(prod.size)
-        expect(fridge.products[0].belongsTo).to.equal(prod.belongsTo)
         expect(fridge.currentCapacity).to.equal(
           fridgeFixtures[0].currentCapacity + prod.size
         )
+        expect(fridge.products[0].belongsTo).to.equal(prod.belongsTo)
       });
     });
 
     it("should not accept products if they don't fit in the fridge", async() => {
       await RequestContext.createAsync(orm.em.fork(), async() => {
         const prod = productFixtures[8]
+        await buyProduct(prod, prod.belongsTo)
         try {
-          await addProduct(prod.belongsTo, prod, 1)
+          await moveProductToFridge(prod.belongsTo, prod.name, 1)
         } catch (error) {
           expect(error.message).to.equal("Product does not fit in fridge")
         }
