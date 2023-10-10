@@ -14,6 +14,7 @@ import { moveProductToFridge } from "../controllers/users/handlers/user.moveProd
 import { create } from "../controllers/users/handlers/user.create.handler.js";
 import { createFridge } from "../controllers/fridge/handlers/fridge.create.handler.js";
 import { buyProduct } from "../controllers/users/handlers/user.buyProduct.handler.js";
+import { giftProductToUser } from "../controllers/users/handlers/user.giftProduct.handler.js";
 
 const userFixtures: User[] = [
   {
@@ -244,6 +245,22 @@ describe("Handler tests", () => {
         } catch (error) {
           expect(error.message).to.equal("Product does not fit in fridge")
         }
+      });
+    });
+
+    it("should gift a product to another user", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const prod = productFixtures[1]
+        const user1 = await getUser(users[0].lastName)
+        const user2 = await getUser(users[1].lastName)
+        await buyProduct(prod, user1.lastName)
+        expect(user1.products.length).to.equal(1)
+        expect(user1.products[0].name).to.equal(prod.name)
+        expect(user2.products.length).to.equal(0)
+        await giftProductToUser(user1.lastName, prod.name, user2.lastName)
+        expect(user1.products.length).to.equal(0)
+        expect(user2.products.length).to.equal(1)
+        expect(user2.products[0].name).to.equal(prod.name)
       });
     });
   });

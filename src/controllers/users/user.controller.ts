@@ -13,6 +13,7 @@ import { ProductView } from "../../contracts/products/product.view.js";
 import { OpenAPI } from "routing-controllers-openapi";
 import { buyProduct } from "./handlers/user.buyProduct.handler.js";
 import { FridgeView } from "../../contracts/fridge/fridge.view.js";
+import { giftProductToUser } from "./handlers/user.giftProduct.handler.js";
 
 @JsonController("/users")
 export class UserController {
@@ -38,6 +39,16 @@ export class UserController {
   ) {
     return moveProductToFridge(lastName, productName, fridgeLocation)
   };
+
+  @Post("/:lastName/gift/:productName/:otherUserLastName")
+  @Representer(UserView, StatusCode.ok)
+  async giftProductToUser(
+    @Param("lastName") lastName: string,
+    @Param("productName") productName: string,
+    @Param("otherUserLastName") otherUserLastName: string,
+  ) {
+    return giftProductToUser(lastName, productName, otherUserLastName)
+  }
 
   @Get()
   @ListRepresenter(UserView)

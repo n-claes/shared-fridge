@@ -5,6 +5,7 @@ import { Product } from "../../entities/product.entity.js";
 
 export const addProductToUser = async (user: User, product: Product) => {
     const em = RequestContext.getEntityManager();
+    product.belongsTo = user.lastName;
     user.products.push(product);
     await em.persistAndFlush(user);
 }
