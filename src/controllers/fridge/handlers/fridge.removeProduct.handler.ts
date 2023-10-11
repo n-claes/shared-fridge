@@ -9,7 +9,7 @@ export const removeProductFromFridge = async (
   const product = await getUserProductFromFridge(userName, productName, location)
   const fridge = await getFridge(location)
 
-  const idxToRemove = fridge.products.indexOf(product);
+  const idxToRemove = fridge.products.findIndex((p) => p.name === product.name)
   fridge.products.splice(idxToRemove, 1);
   fridge.currentCapacity -= product.size;
   await em.persistAndFlush(fridge);

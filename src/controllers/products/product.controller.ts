@@ -1,11 +1,22 @@
 import { ListRepresenter, Query, Representer } from "@panenco/papi";
-import { Get, JsonController, Param } from "routing-controllers";
+import { Delete, Get, JsonController, Param, Post } from "routing-controllers";
 import { ProductView } from "../../contracts/products/product.view.js";
 import { SearchQuery } from "../../contracts/search.query.js";
 import { getAllProducts } from "./handlers/product.getAllProducts.handler.js";
+import { giftAllProductsToUser } from "./handlers/product.giftAllProductsToUser.js";
+import { deleteAllUserProducts } from "./handlers/product.deleteAllUserProducts.js";
 
 @JsonController("/products")
 export class ProductController {
+  @Post("/:lastname/gift/:otherUserLastName")
+  // @ListRepresenter(ProductView)
+  async giftAllProductsToUser(
+    @Param("lastname") lastName: string,
+    @Param("otherUserLastName") otherUserLastName: string,
+  ) {
+    return giftAllProductsToUser(lastName, otherUserLastName)
+  }
+
   @Get()
   @ListRepresenter(ProductView)
   async getAllProducts(@Query() query: SearchQuery) {
@@ -16,5 +27,11 @@ export class ProductController {
   @ListRepresenter(ProductView)
   async getAllUserProducts(@Param("lastName") lastName: string) {
     return getAllProducts(lastName)
+  }
+
+  @Delete("/:lastName")
+  @Representer(null)
+  async deleteAllUserProducts(@Param("lastName") lastName: string) {
+    return deleteAllUserProducts(lastName)
   }
 }
