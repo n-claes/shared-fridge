@@ -1,12 +1,15 @@
 import { Body, ListRepresenter, Query, Representer, StatusCode } from "@panenco/papi";
-import { Get, JsonController, Param, Post } from "routing-controllers";
+import { Delete, Get, JsonController, Param, Post } from "routing-controllers";
 import { FridgeView } from "../../contracts/fridge/fridge.view.js";
 import { FridgeBody } from "../../contracts/fridge/fridge.body.js";
 import { createFridge } from "./handlers/fridge.create.handler.js";
-import { SearchQuery, SearchQueryNumber } from "../../contracts/search.query.js";
+import { SearchQueryNumber } from "../../contracts/search.query.js";
 import { getAllFridges } from "./handlers/fridge.getAllFridges.handler.js";
 import { getFridge } from "./handlers/fridge.getFridge.handler.js";
 import { OpenAPI } from "routing-controllers-openapi";
+import { getUserProductsFromFridge as getUserProductsFromFridge } from "./handlers/fridge.getUserProductsFromFridge.handler.js";
+import { giftAllProductsFromFridgeToUser } from "./handlers/fridge.giftAllProductsFromFridgeToUser.handler.js";
+import { deleteAllUserProductsFromFridge } from "./handlers/fridge.deleteAllUserProductsFromFridge.handler.js";
 
 @JsonController("/fridge")
 export class FridgeController {
@@ -17,6 +20,16 @@ export class FridgeController {
     return createFridge(body);
   }
 
+  @Post("/:location/:lastname/gift/:otherUserLastName/")
+  @Representer(FridgeView, StatusCode.ok)
+  async giftAllProductsFromFridgeToUser(
+    @Param("location") location: number,
+    @Param("lastname") lastName: string,
+    @Param("otherUserLastName") otherUserLastName: string,
+  ) {
+    return giftAllProductsFromFridgeToUser(lastName, location, otherUserLastName);
+  }
+
   @Get()
   @ListRepresenter(FridgeView)
   async getAllFridges(@Query() query: SearchQueryNumber) {
@@ -24,8 +37,23 @@ export class FridgeController {
   }
 
   @Get("/:location")
-  @Representer(FridgeView)
+  @Representer(FridgeView, StatusCode.ok)
   async getFridge(@Param("location") location: number) {
     return getFridge(location);
+  }
+
+  @Get("/:location/:lastName")
+  async getUserProductsFromFridge(
+    @Param("location") location: number, @Param("lastName") lastName: string
+  ) {
+    return getUserProductsFromFridge(location, lastName);
+  }
+
+  @Delete("/:location/:lastName")
+  @Representer(null)
+  async deleteAllUserProductsFromFridge(
+    @Param("location") location: number, @Param("lastName") lastName: string
+  ) {
+    return deleteAllUserProductsFromFridge(lastName, location);
   }
 }

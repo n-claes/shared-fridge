@@ -13,8 +13,13 @@ import { Product } from "../entities/product.entity.js";
 import { moveProductToFridge } from "../controllers/users/handlers/user.moveProductToFridge.handler.js";
 import { create } from "../controllers/users/handlers/user.create.handler.js";
 import { createFridge } from "../controllers/fridge/handlers/fridge.create.handler.js";
-import { buyProduct } from "../controllers/users/handlers/user.buyProduct.handler.js";
 import { giftProductToUser } from "../controllers/users/handlers/user.giftProduct.handler.js";
+import { addProduct } from "../controllers/users/handlers/user.addProduct.handler.js";
+import { removeProductFromFridge } from "../controllers/fridge/handlers/fridge.removeProduct.handler.js";
+import { getProductFromUser } from "../controllers/users/handlers/user.getProduct.handler.js";
+import { getUserProductsFromFridge } from "../controllers/fridge/handlers/fridge.getUserProductsFromFridge.handler.js";
+import { deleteAllUserProductsFromFridge } from "../controllers/fridge/handlers/fridge.deleteAllUserProductsFromFridge.handler.js";
+import { giftAllProductsFromFridgeToUser } from "../controllers/fridge/handlers/fridge.giftAllProductsFromFridgeToUser.handler.js";
 
 const userFixtures: User[] = [
   {
@@ -84,6 +89,11 @@ describe("Handler tests", () => {
   });
 
   after(async () => {
+    // reset database when tests are done
+    // await orm.em.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
+    // await orm.getMigrator().up();
+    // const generator = orm.getSchemaGenerator();
+    // await generator.updateSchema();
     await orm.close(true);
   });
 
@@ -208,7 +218,7 @@ describe("Handler tests", () => {
       await RequestContext.createAsync(orm.em.fork(), async() => {
         const prod = productFixtures[0]
         const user = await getUser(prod.belongsTo)
-        await buyProduct(prod, user.lastName)
+        await addProduct(prod, user.lastName)
         expect(user.products.length).to.equal(1)
         expect(user.products[0].name).to.equal(prod.name)
       });
@@ -219,7 +229,7 @@ describe("Handler tests", () => {
         const prod = productFixtures[0]
         const fridge = await getFridge(0)
         const user = await getUser(prod.belongsTo)
-        await buyProduct(prod, prod.belongsTo)
+        await addProduct(prod, prod.belongsTo)
 
         expect(user.products.length).to.equal(1)
         expect(fridge.products.length).to.equal(0)
@@ -239,7 +249,7 @@ describe("Handler tests", () => {
     it("should not accept products if they don't fit in the fridge", async() => {
       await RequestContext.createAsync(orm.em.fork(), async() => {
         const prod = productFixtures[8]
-        await buyProduct(prod, prod.belongsTo)
+        await addProduct(prod, prod.belongsTo)
         try {
           await moveProductToFridge(prod.belongsTo, prod.name, 1)
         } catch (error) {
@@ -253,7 +263,7 @@ describe("Handler tests", () => {
         const prod = productFixtures[1]
         const user1 = await getUser(users[0].lastName)
         const user2 = await getUser(users[1].lastName)
-        await buyProduct(prod, user1.lastName)
+        await addProduct(prod, user1.lastName)
         expect(user1.products.length).to.equal(1)
         expect(user1.products[0].name).to.equal(prod.name)
         expect(user2.products.length).to.equal(0)
@@ -261,6 +271,98 @@ describe("Handler tests", () => {
         expect(user1.products.length).to.equal(0)
         expect(user2.products.length).to.equal(1)
         expect(user2.products[0].name).to.equal(prod.name)
+      });
+    });
+
+    it("should remove a user's product from a fridge", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const prod = productFixtures[2]
+        const fridge = await getFridge(3)
+        const user = await getUser(users[1].lastName)
+        await addProduct(prod, user.lastName)
+        expect(user.products.length).to.equal(1)
+        await moveProductToFridge(user.lastName, prod.name, fridge.location)
+        expect(fridge.products.length).to.equal(1)
+        expect(fridge.currentCapacity).to.equal(prod.size)
+        await removeProductFromFridge(user.lastName, prod.name, fridge.location)
+        expect(fridge.products.length).to.equal(0)
+        expect(fridge.currentCapacity).to.equal(0)
+        expect(user.products.length).to.equal(0)
+      });
+    });
+
+    it("should get a specific product", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const prod = productFixtures[2]
+        await addProduct(prod, users[1].lastName)
+        const userProd = await getProductFromUser(users[1].lastName, prod.name)
+        expect(userProd.name).to.equal(prod.name)
+        expect(userProd.size).to.equal(prod.size)
+        expect(userProd.belongsTo).to.equal(users[1].lastName)
+      });
+    });
+
+    it("should get all products by a user from a fridge", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const prod1 = productFixtures[0]
+        const prod2 = productFixtures[1]
+        const prod3 = productFixtures[2]
+        const user1 = await getUser(users[1].lastName)
+        const user2 = await getUser(users[2].lastName)
+        const fridge = await getFridge(3)
+        for (const prod of [prod1, prod2]) {
+          await addProduct(prod, user1.lastName)
+          await moveProductToFridge(user1.lastName, prod.name, fridge.location)
+        }
+        await addProduct(prod3, user2.lastName)
+        await moveProductToFridge(user2.lastName, prod3.name, fridge.location)
+        const userProds = await getUserProductsFromFridge(fridge.location, user1.lastName)
+        expect(userProds.length).to.equal(2)
+        expect(userProds[0].name).to.equal(prod1.name)
+        expect(userProds[1].name).to.equal(prod2.name)
+      });
+    });
+
+    it("should delete all user products from a fridge", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const products = productFixtures.slice(0, 4)
+        const user = await getUser(users[1].lastName)
+        const fridge = await getFridge(3)
+        for (const prod of products) {
+          await addProduct(prod, user.lastName)
+          await moveProductToFridge(user.lastName, prod.name, fridge.location)
+        }
+        expect(fridge.products.length).to.equal(products.length)
+        const removedProducts = await deleteAllUserProductsFromFridge(
+          user.lastName, fridge.location
+        )
+        expect(removedProducts.length).to.equal(products.length)
+        expect(fridge.products.length).to.equal(0)
+      });
+    });
+
+    it("should gift all user products from a fridge to another user", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const products = productFixtures.slice(0, 4)
+        const fromUser = await getUser(users[1].lastName)
+        const toUser = await getUser(users[2].lastName)
+        const fridge = await getFridge(3)
+
+        for (const prod of products) {
+          await addProduct(prod, fromUser.lastName)
+          await moveProductToFridge(fromUser.lastName, prod.name, fridge.location)
+        }
+        expect(fridge.products.length).to.equal(products.length)
+        expect(toUser.products.length).to.equal(0)
+        await giftAllProductsFromFridgeToUser(
+          fromUser.lastName, fridge.location, toUser.lastName
+        )
+        expect(fridge.products.length).to.equal(0)
+        expect(fromUser.products.length).to.equal(0)
+        expect(toUser.products.length).to.equal(products.length)
+        for (const prod of products) {
+          expect(toUser.products.some((p) => p.name === prod.name)).to.be.true
+        }
       });
     });
   });

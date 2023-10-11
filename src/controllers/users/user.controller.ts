@@ -11,9 +11,11 @@ import { ProductBody } from "../../contracts/products/product.body.js";
 import { moveProductToFridge } from "./handlers/user.moveProductToFridge.handler.js";
 import { ProductView } from "../../contracts/products/product.view.js";
 import { OpenAPI } from "routing-controllers-openapi";
-import { buyProduct } from "./handlers/user.buyProduct.handler.js";
+import { addProduct } from "./handlers/user.addProduct.handler.js";
 import { FridgeView } from "../../contracts/fridge/fridge.view.js";
 import { giftProductToUser } from "./handlers/user.giftProduct.handler.js";
+import { removeProductFromFridge } from "../fridge/handlers/fridge.removeProduct.handler.js";
+import { getProductFromUser } from "./handlers/user.getProduct.handler.js";
 
 @JsonController("/users")
 export class UserController {
@@ -27,7 +29,7 @@ export class UserController {
   @Post("/:lastName/buy")
   @Representer(ProductView, StatusCode.ok)
   async buyProduct(@Param("lastName") lastName: string, @Body() body: ProductBody) {
-    return buyProduct(body, lastName)
+    return addProduct(body, lastName)
   }
 
   @Post("/:lastName/move/:productName/:fridgeLocation")
@@ -62,9 +64,27 @@ export class UserController {
     return getUser(lastName);
   }
 
+  @Get("/:lastname/:productName")
+  @Representer(ProductView)
+  async getUserProduct(
+    @Param("lastName") lastName: string, @Param("productName") productName: string
+  ) {
+    return getProductFromUser(lastName, productName);
+  }
+
   @Delete("/:lastName")
   @Representer(null)
   async deleteUser(@Param("lastName") lastName: string) {
     return deleteByName(lastName);
+  }
+
+  @Delete("/:lastName/remove/:productName/:fridgeLocation")
+  @Representer(null)
+  async removeProductFromFridge(
+    @Param("lastName") lastName: string,
+    @Param("fridgeLocation") fridgeLocation: number,
+    @Param("productName") productName: string,
+  ) {
+    return removeProductFromFridge(lastName, productName, fridgeLocation)
   }
 }
