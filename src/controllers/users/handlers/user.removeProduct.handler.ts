@@ -7,7 +7,7 @@ export const removeProductFromUser = async (lastName: string, productName: strin
   const product = await getProductFromUser(lastName, productName);
   const user = await getUser(lastName);
 
-  const idxToRemove = user.products.indexOf(product);
+  const idxToRemove = user.products.findIndex((p) => p.name === product.name);
   user.products.splice(idxToRemove, 1);
   await em.persistAndFlush(user);
   return product;

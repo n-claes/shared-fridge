@@ -14,7 +14,6 @@ import { OpenAPI } from "routing-controllers-openapi";
 import { addProduct } from "./handlers/user.addProduct.handler.js";
 import { FridgeView } from "../../contracts/fridge/fridge.view.js";
 import { giftProductToUser } from "./handlers/user.giftProduct.handler.js";
-import { removeProductFromFridge } from "../fridge/handlers/fridge.removeProduct.handler.js";
 import { getProductFromUser } from "./handlers/user.getProduct.handler.js";
 
 @JsonController("/users")
@@ -66,7 +65,7 @@ export class UserController {
 
   @Get("/:lastname/:productName")
   @Representer(ProductView)
-  async getUserProduct(
+  async getProductFromUser(
     @Param("lastName") lastName: string, @Param("productName") productName: string
   ) {
     return getProductFromUser(lastName, productName);
@@ -76,15 +75,5 @@ export class UserController {
   @Representer(null)
   async deleteUser(@Param("lastName") lastName: string) {
     return deleteByName(lastName);
-  }
-
-  @Delete("/:lastName/remove/:productName/:fridgeLocation")
-  @Representer(null)
-  async removeProductFromFridge(
-    @Param("lastName") lastName: string,
-    @Param("fridgeLocation") fridgeLocation: number,
-    @Param("productName") productName: string,
-  ) {
-    return removeProductFromFridge(lastName, productName, fridgeLocation)
   }
 }

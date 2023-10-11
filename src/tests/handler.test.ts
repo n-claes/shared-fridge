@@ -15,9 +15,9 @@ import { create } from "../controllers/users/handlers/user.create.handler.js";
 import { createFridge } from "../controllers/fridge/handlers/fridge.create.handler.js";
 import { giftProductToUser } from "../controllers/users/handlers/user.giftProduct.handler.js";
 import { addProduct } from "../controllers/users/handlers/user.addProduct.handler.js";
-import { removeProductFromFridge } from "../controllers/fridge/handlers/fridge.removeProduct.handler.js";
+import { removeProductFromFridge } from "../controllers/fridge/handlers/fridge.removeProductFromFridge.handler.js";
 import { getProductFromUser } from "../controllers/users/handlers/user.getProduct.handler.js";
-import { getUserProductsFromFridge } from "../controllers/fridge/handlers/fridge.getUserProductsFromFridge.handler.js";
+import { getProductsFromFridge } from "../controllers/fridge/handlers/fridge.getProductsFromFridge.handler.js";
 import { deleteAllUserProductsFromFridge } from "../controllers/fridge/handlers/fridge.deleteAllUserProductsFromFridge.handler.js";
 import { giftAllProductsFromFridgeToUser } from "../controllers/fridge/handlers/fridge.giftAllProductsFromFridgeToUser.handler.js";
 import { getAllProducts } from "../controllers/products/handlers/product.getAllProducts.handler.js";
@@ -317,7 +317,7 @@ describe("Handler tests", () => {
         }
         await addProduct(prod3, user2.lastName)
         await moveProductToFridge(user2.lastName, prod3.name, fridge.location)
-        const userProds = await getUserProductsFromFridge(fridge.location, user1.lastName)
+        const userProds = await getProductsFromFridge(fridge.location, user1.lastName)
         expect(userProds.length).to.equal(2)
         expect(userProds[0].name).to.equal(prod1.name)
         expect(userProds[1].name).to.equal(prod2.name)

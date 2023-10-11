@@ -3,7 +3,6 @@ import { getUser } from "../../users/handlers/user.getUser.handler.js";
 import { deleteAllUserProducts } from "./product.deleteAllUserProducts.js";
 import { addProduct } from "../../users/handlers/user.addProduct.handler.js";
 import { ProductBody } from "../../../contracts/products/product.body.js";
-import { createProduct } from "./product.create.handler.js";
 
 export const giftAllProductsToUser = async (
   lastName: string, otherUserLastName: string

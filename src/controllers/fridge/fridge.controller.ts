@@ -7,9 +7,10 @@ import { SearchQueryNumber } from "../../contracts/search.query.js";
 import { getAllFridges } from "./handlers/fridge.getAllFridges.handler.js";
 import { getFridge } from "./handlers/fridge.getFridge.handler.js";
 import { OpenAPI } from "routing-controllers-openapi";
-import { getUserProductsFromFridge as getUserProductsFromFridge } from "./handlers/fridge.getUserProductsFromFridge.handler.js";
+import { getProductsFromFridge as getProductsFromFridge } from "./handlers/fridge.getProductsFromFridge.handler.js";
 import { giftAllProductsFromFridgeToUser } from "./handlers/fridge.giftAllProductsFromFridgeToUser.handler.js";
 import { deleteAllUserProductsFromFridge } from "./handlers/fridge.deleteAllUserProductsFromFridge.handler.js";
+import { removeProductFromFridge } from "./handlers/fridge.removeProductFromFridge.handler.js";
 
 @JsonController("/fridge")
 export class FridgeController {
@@ -46,7 +47,17 @@ export class FridgeController {
   async getUserProductsFromFridge(
     @Param("location") location: number, @Param("lastName") lastName: string
   ) {
-    return getUserProductsFromFridge(location, lastName);
+    return getProductsFromFridge(location, lastName);
+  }
+
+  @Delete("/:location/:lastName/remove/:productName")
+  @Representer(null)
+  async removeProductFromFridge(
+    @Param("lastName") lastName: string,
+    @Param("fridgeLocation") fridgeLocation: number,
+    @Param("productName") productName: string,
+  ) {
+    return removeProductFromFridge(lastName, productName, fridgeLocation)
   }
 
   @Delete("/:location/:lastName")
