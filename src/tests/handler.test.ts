@@ -20,6 +20,7 @@ import { getProductFromUser } from "../controllers/users/handlers/user.getProduc
 import { getUserProductsFromFridge } from "../controllers/fridge/handlers/fridge.getUserProductsFromFridge.handler.js";
 import { deleteAllUserProductsFromFridge } from "../controllers/fridge/handlers/fridge.deleteAllUserProductsFromFridge.handler.js";
 import { giftAllProductsFromFridgeToUser } from "../controllers/fridge/handlers/fridge.giftAllProductsFromFridgeToUser.handler.js";
+import { getAllProducts } from "../controllers/products/handlers/product.getAllProducts.handler.js";
 
 const userFixtures: User[] = [
   {
@@ -362,6 +363,29 @@ describe("Handler tests", () => {
         expect(toUser.products.length).to.equal(products.length)
         for (const prod of products) {
           expect(toUser.products.some((p) => p.name === prod.name)).to.be.true
+        }
+      });
+    });
+
+
+    it("should retrieve all products from all fridges", async() => {
+      await RequestContext.createAsync(orm.em.fork(), async() => {
+        const products = productFixtures.slice(0, 4)
+        const user = await getUser(users[1].lastName)
+        const fridge1 = await getFridge(0)
+        const fridge3 = await getFridge(3)
+
+        for (const prod of products) {
+          await addProduct(prod, user.lastName)
+        }
+        for (let i = 0; i < 2; i++) {
+          await moveProductToFridge(user.lastName, products[i].name, fridge1.location)
+          await moveProductToFridge(user.lastName, products[i+2].name, fridge3.location)
+        }
+        const [res, total] = await getAllProducts(null);
+        expect(res.length).to.equal(products.length);
+        for (let i = 0; i < products.length; i++) {
+          expect(res.some((x) => x.name === products[i].name)).to.be.true;
         }
       });
     });

@@ -17,6 +17,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import ormConfig from './mikro-orm.config.js';
 import { UserController } from './controllers/users/user.controller.js';
 import { FridgeController } from './controllers/fridge/fridge.controller.js';
+import { ProductController } from '../build/controllers/products/product.controller.js';
 
 export class App {
   public host: Application
@@ -30,7 +31,7 @@ export class App {
       RequestContext.create(this.orm.em, next);
     });
 
-    const controllers = [UserController, FridgeController]
+    const controllers = [UserController, FridgeController, ProductController]
     this.initializeControllers(controllers)
     this.initializeSwagger();
 
