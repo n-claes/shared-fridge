@@ -10,6 +10,8 @@ import { User } from "../entities/user.entity.js";
 import { Fridge } from "../entities/fridge.entity.js";
 import { ProductBody } from "../contracts/products/product.body.js";
 import { Product } from "../entities/product.entity.js";
+import { Recipe } from "../entities/recipe.entity.js";
+import { RecipeBody } from "../contracts/recipes/recipe.body.js";
 
 const testProducts = {
   egg: {name: "egg", size: 1},
@@ -51,6 +53,30 @@ const testFridges = {
     location: 3,
     totalCapacity: 5,
   } as Fridge,
+}
+
+const testRecipes = {
+  friedEgg: {
+    name: "fried_egg",
+    description: "ingredients for fried eggs.",
+    ingredients: [testProducts.egg.name, testProducts.spices.name],
+  } as Recipe,
+  cookedPasta: {
+    name: "cooked_pasta",
+    description: "ingredients for cooked pasta.",
+    ingredients: [testProducts.pasta.name, testProducts.water.name],
+  } as Recipe,
+  friedChicken: {
+    name: "fried_chicken_pasta",
+    description: "ingredients for fried chicken.",
+    ingredients: [
+      testProducts.chicken.name,
+      testProducts.spices.name,
+      testProducts.tomatoes.name,
+      testProducts.spices.name,
+      testProducts.flour.name,
+    ],
+  } as Recipe,
 }
 
 
@@ -113,6 +139,13 @@ describe("Integration tests", () => {
       return response
     }
 
+    const addTestRecipe = async (user: User, body: RecipeBody) => {
+      const {body: response} = await request.post(
+        `/api/recipes/${user.lastName}`
+      ).send(body as RecipeBody).expect(StatusCode.created);
+      return response;
+    }
+
     const getTestUser = async (userName: string) => {
       const {body: response} = await request.get(`/api/users/${userName}`).expect(
         StatusCode.ok
@@ -124,6 +157,13 @@ describe("Integration tests", () => {
       const {body: response} = await request.get(`/api/fridge/${location}`).expect(
         StatusCode.ok
       );
+      return response;
+    }
+
+    const getTestRecipe = async (user: User, recipeName: string) => {
+      const {body: response} = await request.get(
+        `/api/recipes/${user.lastName}/${recipeName}`
+      ).expect(StatusCode.ok);
       return response;
     }
 
@@ -339,6 +379,77 @@ describe("Integration tests", () => {
       fridge2 = await getTestFridge(fridge2.location);
       expect(fridge2.products.length).to.equal(0);
       expect(fridge2.currentCapacity).to.equal(0);
+    });
+
+    it("should CRUD recipes", async () => {
+      await createTestUsers();
+      const user = testUsers.user1;
+      const friedEgg = testRecipes.friedEgg;
+
+      // create recipes
+      const createResponse = await addTestRecipe(user, friedEgg);
+      expect(createResponse.name).to.equal(friedEgg.name);
+      expect(createResponse.description).to.equal(friedEgg.description);
+      expect(createResponse.ingredients.length).to.equal(friedEgg.ingredients.length);
+      expect(createResponse.belongsTo).to.equal(user.lastName);
+
+      // get recipe
+      const getResponse = await getTestRecipe(user, friedEgg.name);
+      expect(getResponse.name).to.equal(friedEgg.name);
+      expect(getResponse.description).to.equal(friedEgg.description);
+      expect(getResponse.ingredients.length).to.equal(friedEgg.ingredients.length);
+      expect(getResponse.belongsTo).to.equal(user.lastName);
+
+      // patch recipe
+      const newBody = {
+        "description": "a new description",
+        "ingredients": ["egg", "spices", "water"],
+      }
+      const {body: patchResponse} = await request.patch(
+        `/api/recipes/${user.lastName}/${friedEgg.name}`
+      ).send(newBody as RecipeBody);
+      expect(patchResponse.name).to.equal(friedEgg.name);
+      expect(patchResponse.description).to.equal(newBody.description);
+      expect(patchResponse.ingredients.length).to.equal(newBody.ingredients.length);
+      expect(patchResponse.belongsTo).to.equal(user.lastName);
+
+      // add some extra recipes
+      await addTestRecipe(user, testRecipes.cookedPasta);
+      await addTestRecipe(testUsers.user2, testRecipes.friedChicken);
+
+      // get all recipes for user1
+      const {body: getAllResponse} = await request.get(
+        `/api/recipes/${user.lastName}`
+      );
+      let {items, count} = getAllResponse;
+      expect(count).to.equal(2);
+      expect(items.some((r: Recipe) => r.name === friedEgg.name)).true;
+      expect(items.some((r: Recipe) => r.name === testRecipes.cookedPasta.name)).true;
+      expect(items.every((r: Recipe) => r.belongsTo === user.lastName)).true;
+      const {body: getAllResponse2} = await request.get(
+        `/api/recipes/${testUsers.user2.lastName}`
+      );
+      ({items, count} = getAllResponse2);
+      expect(count).to.equal(1);
+      expect(items[0].name).to.equal(testRecipes.friedChicken.name);
+      expect(items[0].belongsTo).to.equal(testUsers.user2.lastName);
+
+      // delete recipe
+      await request.delete(`/api/recipes/${user.lastName}/${friedEgg.name}`);
+      const {body: getAllResponseDeleted} = await request.get(
+        `/api/recipes/${user.lastName}`
+      );
+      ({items, count} = getAllResponseDeleted);
+      expect(count).to.equal(1);
+      expect(items[0].name).to.equal(testRecipes.cookedPasta.name);
+      expect(items[0].belongsTo).to.equal(user.lastName);
+
+      // get all recipes
+      const {body: allRecipesResponse} = await request.get(`/api/recipes`);
+      ({items, count} = allRecipesResponse);
+      expect(count).to.equal(2);
+      expect(items.some((r: Recipe) => r.name === testRecipes.cookedPasta.name)).true;
+      expect(items.some((r: Recipe) => r.name === testRecipes.friedChicken.name)).true;
     });
   });
 });
