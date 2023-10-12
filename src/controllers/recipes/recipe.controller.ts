@@ -8,6 +8,7 @@ import { SearchQuery } from "../../contracts/search.query.js";
 import { getAllRecipes } from "./handlers/recipe.getAllRecipes.js";
 import { updateRecipe } from "./handlers/recipe.update.handler.js";
 import { deleteRecipe } from "./handlers/recipe.delete.handler.js";
+import { getMissingIngredients } from "./handlers/recipe.missingIngredients.handler.js";
 
 @JsonController("/recipes")
 export class RecipeController {
@@ -37,6 +38,14 @@ export class RecipeController {
     @Param("lastName") lastName: string, @Param("recipeName") recipeName: string
   ) {
     return getRecipe(lastName, recipeName);
+  }
+
+
+  @Get("/:lastName/:recipeName/ingredients")
+  async getMissingIngredients(
+    @Param("lastName") lastName: string, @Param("recipeName") recipeName: string
+  ) {
+    return getMissingIngredients(lastName, recipeName);
   }
 
 

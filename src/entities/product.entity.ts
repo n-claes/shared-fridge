@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, PrimaryKeyType, Property } from "@mikro-orm/core";
-import { IsNumber, IsString } from "class-validator";
+import { IsBoolean, IsNumber, IsString } from "class-validator";
 
 @Entity()
 export class Product {
@@ -17,4 +17,8 @@ export class Product {
   @Property()
   @IsNumber()
   public size: number;
+
+  @Property()
+  @IsBoolean()
+  public inFridge: boolean;
 }

@@ -73,7 +73,7 @@ const testRecipes = {
       testProducts.chicken.name,
       testProducts.spices.name,
       testProducts.tomatoes.name,
-      testProducts.spices.name,
+      testProducts.pasta.name,
       testProducts.flour.name,
     ],
   } as Recipe,
@@ -451,5 +451,36 @@ describe("Integration tests", () => {
       expect(items.some((r: Recipe) => r.name === testRecipes.cookedPasta.name)).true;
       expect(items.some((r: Recipe) => r.name === testRecipes.friedChicken.name)).true;
     });
+
+    it("should fetch missing ingredients", async() => {
+      await createTestUsers();
+      await createTestFridges();
+      const user = testUsers.user1;
+      const products = [
+        testProducts.chicken,
+        testProducts.tomatoes,
+        testProducts.flour,
+        testProducts.pasta,
+        testProducts.spices,
+      ]
+      const recipe = testRecipes.friedChicken;
+
+      for (const product of products) {
+        await addTestProductToUser(user, product);
+      }
+      for (const product of products.slice(2, products.length)) {
+        await addTestProductToFridge(user, testFridges.fridge2, product.name);
+      }
+      await addTestRecipe(user, recipe)
+
+      // get missing ingredients from fridge
+      const {body: missingIngredients} = await request.get(
+        `/api/recipes/${user.lastName}/${recipe.name}/ingredients`
+      );
+      expect(missingIngredients.length).to.equal(3);
+      expect(missingIngredients.some((p: Product) => p.name === products[2].name)).true;
+      expect(missingIngredients.some((p: Product) => p.name === products[3].name)).true;
+      expect(missingIngredients.some((p: Product) => p.name === products[4].name)).true;
+    })
   });
 });

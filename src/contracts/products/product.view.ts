@@ -1,5 +1,5 @@
 import { Exclude, Expose } from "class-transformer";
-import { IsNumber, IsString } from "class-validator";
+import { IsBoolean, IsNumber, IsString } from "class-validator";
 
 @Exclude()
 export class ProductView {
@@ -14,4 +14,8 @@ export class ProductView {
   @Expose()
   @IsString()
   public belongsTo: string;
+
+  @Expose()
+  @IsBoolean()
+  public inFridge: boolean;
 }

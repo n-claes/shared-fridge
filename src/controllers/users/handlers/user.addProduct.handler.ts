@@ -11,6 +11,7 @@ export const addProduct = async (body: ProductBody, userName: string) => {
     name: body.name,
     belongsTo: user.lastName
   }) || await createProduct(body, user.lastName)
+  product.inFridge = false;
   user.products.push(product);
   await em.persistAndFlush(user);
   return user;

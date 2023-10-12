@@ -9,5 +9,5 @@ export const addProductToFridge = async (product: Product, fridge: Fridge) => {
   }
   fridge.products.push(product);
   fridge.currentCapacity += product.size;
-  await em.persistAndFlush(fridge);
+  await em.flush();
 }

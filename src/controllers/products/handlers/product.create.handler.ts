@@ -6,6 +6,7 @@ export const createProduct = async (body: ProductBody, lastName: string) => {
   const em = RequestContext.getEntityManager();
   const product = em.create(Product, body);
   product.belongsTo = lastName;
+  product.inFridge = false;
   await em.persistAndFlush(product);
   return product;
 }
