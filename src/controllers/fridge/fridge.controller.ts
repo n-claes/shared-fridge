@@ -54,10 +54,10 @@ export class FridgeController {
   @Representer(null)
   async removeProductFromFridge(
     @Param("lastName") lastName: string,
-    @Param("fridgeLocation") fridgeLocation: number,
+    @Param("location") location: number,
     @Param("productName") productName: string,
   ) {
-    return removeProductFromFridge(lastName, productName, fridgeLocation)
+    return removeProductFromFridge(lastName, productName, location)
   }
 
   @Delete("/:location/:lastName")

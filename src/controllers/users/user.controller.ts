@@ -26,7 +26,7 @@ export class UserController {
   }
 
   @Post("/:lastName/buy")
-  @Representer(ProductView, StatusCode.ok)
+  @Representer(UserView, StatusCode.ok)
   async buyProduct(@Param("lastName") lastName: string, @Body() body: ProductBody) {
     return addProduct(body, lastName)
   }
@@ -63,7 +63,7 @@ export class UserController {
     return getUser(lastName);
   }
 
-  @Get("/:lastname/:productName")
+  @Get("/:lastName/:productName")
   @Representer(ProductView)
   async getProductFromUser(
     @Param("lastName") lastName: string, @Param("productName") productName: string

@@ -8,10 +8,9 @@ import { deleteAllUserProducts } from "./handlers/product.deleteAllUserProducts.
 
 @JsonController("/products")
 export class ProductController {
-  @Post("/:lastname/gift/:otherUserLastName")
-  @ListRepresenter(ProductView)
+  @Post("/:lastName/gift/:otherUserLastName")
   async giftAllProductsToUser(
-    @Param("lastname") lastName: string,
+    @Param("lastName") lastName: string,
     @Param("otherUserLastName") otherUserLastName: string,
   ) {
     return giftAllProductsToUser(lastName, otherUserLastName)
