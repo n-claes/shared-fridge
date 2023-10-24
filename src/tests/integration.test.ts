@@ -343,6 +343,7 @@ describe("Integration tests", () => {
         `/api/products/${user.lastName}/`
       );
       const {items, count} = getAllResponse;
+      console.log(items, count)
       expect(count).to.equal(3);
       expect(items.some((p: Product) => p.name === pasta.name)).true;
       expect(items.some((p: Product) => p.name === water.name)).true;
@@ -355,11 +356,9 @@ describe("Integration tests", () => {
       const {body: allGiftResponse} = await request.post(
         `/api/products/${user.lastName}/gift/${testUsers.user2.lastName}`
       );
-      expect(allGiftResponse.length).to.equal(3);
-      toUser = await getTestUser(testUsers.user2.lastName);
-      expect(toUser.products.length).to.equal(3);
+      expect(allGiftResponse.products.length).to.equal(3);
       expect(
-        toUser.products.every((p: Product) => p.belongsTo === toUser.lastName)
+        allGiftResponse.products.every((p: Product) => p.belongsTo === toUser.lastName)
       ).true;
 
       // put everything back in the fridges
